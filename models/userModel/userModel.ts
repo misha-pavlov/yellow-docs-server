@@ -1,17 +1,26 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const dataSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     required: true,
     type: String,
   },
-  age: {
+  lastName: {
     required: true,
-    type: Number,
+    type: String,
+  },
+  email: {
+    required: true,
+    type: String,
+  },
+  password: {
+    required: true,
+    type: String,
+  },
+  image: {
+    required: true,
+    type: String,
   },
 });
-
-// for fix Cannot redeclare block-scoped variable 'mongoose'.
-export {}
 
 module.exports = mongoose.model("User", dataSchema);
