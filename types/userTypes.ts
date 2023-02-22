@@ -5,6 +5,7 @@ export type UserType = {
   email: string;
   password: string;
   image: string;
+  token: string;
 };
 
 export type SignUpReq = {
