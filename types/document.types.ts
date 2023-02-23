@@ -1,5 +1,6 @@
 export type DocumentType = {
   _id: string;
+  title: string;
   changedBy: string;
   changedAt: Date;
   owner: string;
@@ -16,6 +17,16 @@ export type GetDocumentType = {
 
 export type GetRecentDocumentsType = {
   body: {
-    searchTerm: string;
+    searchTerm?: string;
   };
 };
+
+export type EditDocument = {
+    body: {
+        documentId: string;
+        newTitle?: string;
+        newVisibleForUserId?: string;
+        newFavouriteUserId?: string;
+        newContent?: string;
+    }
+}

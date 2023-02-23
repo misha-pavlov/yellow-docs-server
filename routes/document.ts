@@ -1,9 +1,10 @@
 import express, { Response } from "express";
+import { getFieldsToEdit } from "../helpers/document.helpers";
 import { UserReq } from "../types/common.types";
 import {
   GetDocumentType,
-  DocumentType,
   GetRecentDocumentsType,
+  EditDocument,
 } from "../types/document.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
@@ -57,7 +58,7 @@ documentRouter.get(
   auth,
   async (req: UserReq & GetRecentDocumentsType, res: Response) => {
     const userId = checkExistsUserId(req, res);
-    const searchTerm = req.body.searchTerm || '';
+    const searchTerm = req.body.searchTerm || "";
     const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
 
     const recentDocuments = await DocumentModel.find({
@@ -71,6 +72,31 @@ documentRouter.get(
     }
 
     res.status(200).json(recentDocuments);
+  }
+);
+
+documentRouter.patch(
+  "/editDocument",
+  auth,
+  async (req: EditDocument & UserReq, res: Response) => {
+    const userId = checkExistsUserId(req, res);
+    const documentId = req.body.documentId;
+
+    if (!documentId) {
+      res.status(400).json({ message: "Document id not found!" });
+      return null;
+    }
+
+    const fieldsToEdit = await getFieldsToEdit(req);
+
+    await DocumentModel.findOneAndUpdate(
+      { _id: documentId },
+      { ...fieldsToEdit, changedBy: userId, changedAt: new Date() }
+    );
+
+    const editedDocument = await DocumentModel.findOne({ _id: documentId });
+
+    res.status(200).json(editedDocument);
   }
 );
 
