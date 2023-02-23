@@ -1,6 +1,10 @@
 import express, { Response } from "express";
 import { UserReq } from "../types/common.types";
-import { GetDocumentType, DocumentType } from "../types/document.types";
+import {
+  GetDocumentType,
+  DocumentType,
+  GetRecentDocumentsType,
+} from "../types/document.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
 const DocumentModel = require("../models/documentModel/documentModel");
@@ -51,10 +55,14 @@ documentRouter.get(
 documentRouter.get(
   "/getRecentDocuments",
   auth,
-  async (req: UserReq, res: Response) => {
+  async (req: UserReq & GetRecentDocumentsType, res: Response) => {
     const userId = checkExistsUserId(req, res);
+    const searchTerm = req.body.searchTerm || '';
+    const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
+
     const recentDocuments = await DocumentModel.find({
       visibleFor: { $in: [userId] },
+      title: { $regex: regex, $options: "i" },
     }).sort({ changedAt: -1 });
 
     if (!recentDocuments) {

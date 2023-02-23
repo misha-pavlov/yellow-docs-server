@@ -13,3 +13,9 @@ export type GetDocumentType = {
     documentId: string;
   };
 };
+
+export type GetRecentDocumentsType = {
+  body: {
+    searchTerm: string;
+  };
+};
