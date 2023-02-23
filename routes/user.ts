@@ -2,7 +2,12 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { CATS_MEMES_IMAGE_URLS } from "../static/images";
-import { SignInReq, SignUpReq, UserType } from "../types/userTypes";
+import {
+  CurrentUserReq,
+  SignInReq,
+  SignUpReq,
+  UserType,
+} from "../types/userTypes";
 
 const UserModel = require("../models/userModel/userModel");
 const auth = require("../middleware/auth");
@@ -80,6 +85,28 @@ userRouter.post("/signin", async (req: SignInReq, res: express.Response) => {
 
   res.json(userByMail);
 });
+
+userRouter.get(
+  "/currentUser",
+  auth,
+  async (req: CurrentUserReq, res: express.Response) => {
+    const userId = req.user && req.user.user_id;
+
+    if (!userId) {
+      res.status(400).json({ message: "User id not found!" });
+      return null;
+    }
+
+    const currentUser = await UserModel.findOne({ _id: userId });
+
+    if (!currentUser) {
+      res.status(400).json({ message: "User not found!" });
+      return null;
+    }
+
+    res.status(200).json(currentUser);
+  }
+);
 
 // example to use auth
 userRouter.post("/welcome", auth, (req, res) => {
