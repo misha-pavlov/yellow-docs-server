@@ -32,7 +32,7 @@ documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
 });
 
 documentRouter.get(
-  "/getDocument",
+  "/getOne",
   auth,
   async (req: GetAndDeleteDocumentType, res: Response) => {
     const documentId = req.body.documentId;
@@ -76,7 +76,7 @@ documentRouter.get(
 );
 
 documentRouter.patch(
-  "/editDocument",
+  "/edit",
   auth,
   async (req: EditDocument & UserReq, res: Response) => {
     const userId = checkExistsUserId(req, res);
@@ -101,7 +101,7 @@ documentRouter.patch(
 );
 
 documentRouter.delete(
-  "/deleteDocument",
+  "/delete",
   auth,
   async (req: GetAndDeleteDocumentType & UserReq, res: Response) => {
     const userId = checkExistsUserId(req, res);
