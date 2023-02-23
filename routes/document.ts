@@ -1,5 +1,5 @@
 import express, { Response } from "express";
-import { getFieldsToEdit } from "../helpers/document.helpers";
+import { getDocument, getFieldsToEdit } from "../helpers/document.helpers";
 import { UserReq } from "../types/common.types";
 import {
   GetAndDeleteDocumentType,
@@ -39,19 +39,7 @@ documentRouter.get(
   auth,
   async (req: GetAndDeleteDocumentType, res: Response) => {
     const documentId = req.body.documentId;
-
-    if (!documentId) {
-      res.status(400).json({ message: "Document id not found!" });
-      return null;
-    }
-
-    const document = await DocumentModel.findOne({ _id: documentId });
-
-    if (!document) {
-      res.status(400).json({ message: "Document not found!" });
-      return null;
-    }
-
+    const document = await getDocument(documentId, res);
     res.status(200).json(document);
   }
 );
@@ -83,22 +71,9 @@ documentRouter.get(
   auth,
   async (req: GetAndDeleteDocumentType, res: Response) => {
     const documentId = req.body.documentId;
-
-    if (!documentId) {
-      res.status(400).json({ message: "Document id not found!" });
-      return null;
-    }
-
-    const document = await DocumentModel.findOne({ _id: documentId });
-
-    if (!document) {
-      res.status(400).json({ message: "Document not found!" });
-      return null;
-    }
-
+    const document = await getDocument(documentId, res);
     const userIds = document.visibleFor;
     const users = await UserModel.find({ _id: { $in: userIds } });
-
     res.status(200).json(users);
   }
 );
@@ -136,18 +111,7 @@ documentRouter.delete(
   async (req: GetAndDeleteDocumentType & UserReq, res: Response) => {
     const userId = checkExistsUserId(req, res);
     const documentId = req.body.documentId;
-
-    if (!documentId) {
-      res.status(400).json({ message: "Document id not found!" });
-      return null;
-    }
-
-    const document = await DocumentModel.findOne({ _id: documentId });
-
-    if (!document) {
-      res.status(400).json({ message: "Document not found!" });
-      return null;
-    }
+    const document = await getDocument(documentId, res);
 
     if (userId !== document.owner) {
       res.status(400).json({

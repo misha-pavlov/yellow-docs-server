@@ -1,3 +1,4 @@
+import { Response } from "express";
 import { UserReq } from "../types/common.types";
 import { EditDocument } from "../types/document.types";
 
@@ -52,4 +53,23 @@ export const getFieldsToEdit = async (req: EditDocument & UserReq) => {
   }
 
   return editFields;
+};
+
+export const getDocument = async (
+  documentId: string | undefined,
+  res: Response
+) => {
+  if (!documentId) {
+    res.status(400).json({ message: "Document id not found!" });
+    return null;
+  }
+
+  const document = await DocumentModel.findOne({ _id: documentId });
+
+  if (!document) {
+    res.status(400).json({ message: "Document not found!" });
+    return null;
+  }
+
+  return document;
 };
