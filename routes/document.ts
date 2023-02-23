@@ -1,5 +1,9 @@
 import express, { Response } from "express";
-import { getDocument, getFieldsToEdit } from "../helpers/document.helpers";
+import {
+  getAdditionalRDFields,
+  getDocument,
+  getFieldsToEdit,
+} from "../helpers/document.helpers";
 import { UserReq } from "../types/common.types";
 import {
   GetAndDeleteDocumentType,
@@ -48,13 +52,16 @@ documentRouter.get(
   "/getRecentDocuments",
   auth,
   async (req: UserReq & GetRecentDocumentsType, res: Response) => {
-    const userId = checkExistsUserId(req, res);
+    const userId = checkExistsUserId(req, res) as string;
     const searchTerm = req.body.searchTerm || "";
     const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
+
+    const additionalFields = getAdditionalRDFields(req, userId);
 
     const recentDocuments = await DocumentModel.find({
       visibleFor: { $in: [userId] },
       title: { $regex: regex, $options: "i" },
+      ...additionalFields,
     }).sort({ changedAt: -1 });
 
     if (!recentDocuments) {

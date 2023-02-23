@@ -1,6 +1,10 @@
 import { Response } from "express";
 import { UserReq } from "../types/common.types";
-import { EditDocument } from "../types/document.types";
+import {
+  EditDocument,
+  GetRecentDocumentsType,
+  OwnedEnum,
+} from "../types/document.types";
 
 const DocumentModel = require("../models/documentModel/documentModel");
 
@@ -72,4 +76,23 @@ export const getDocument = async (
   }
 
   return document;
+};
+
+// additional filter fields for Recent Documents
+export const getAdditionalRDFields = (
+  req: UserReq & GetRecentDocumentsType,
+  userId: string
+) => {
+  let additionalFields = {};
+  const owned = req.body.owned;
+
+  if (owned === OwnedEnum.BY_ME) {
+    additionalFields = { owner: userId };
+  }
+
+  if (owned === OwnedEnum.NOT_BY_ME) {
+    additionalFields = { owner: { $nin: [userId] } };
+  }
+
+  return additionalFields;
 };
