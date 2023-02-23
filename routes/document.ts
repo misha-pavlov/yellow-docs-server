@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import { getFieldsToEdit } from "../helpers/document.helpers";
 import { UserReq } from "../types/common.types";
 import {
-  GetDocumentType,
+  GetAndDeleteDocumentType,
   GetRecentDocumentsType,
   EditDocument,
 } from "../types/document.types";
@@ -34,7 +34,7 @@ documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
 documentRouter.get(
   "/getDocument",
   auth,
-  async (req: GetDocumentType, res: Response) => {
+  async (req: GetAndDeleteDocumentType, res: Response) => {
     const documentId = req.body.documentId;
 
     if (!documentId) {
@@ -97,6 +97,37 @@ documentRouter.patch(
     const editedDocument = await DocumentModel.findOne({ _id: documentId });
 
     res.status(200).json(editedDocument);
+  }
+);
+
+documentRouter.delete(
+  "/deleteDocument",
+  auth,
+  async (req: GetAndDeleteDocumentType & UserReq, res: Response) => {
+    const userId = checkExistsUserId(req, res);
+    const documentId = req.body.documentId;
+
+    if (!documentId) {
+      res.status(400).json({ message: "Document id not found!" });
+      return null;
+    }
+
+    const document = await DocumentModel.findOne({ _id: documentId });
+
+    if (!document) {
+      res.status(400).json({ message: "Document not found!" });
+      return null;
+    }
+
+    if (userId !== document.owner) {
+      res.status(400).json({
+        message: "You can not delete this document because you are not owner!",
+      });
+      return null;
+    }
+
+    await DocumentModel.deleteOne({ _id: documentId });
+    res.status(200).send("Deleted!");
   }
 );
 

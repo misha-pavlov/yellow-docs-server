@@ -9,7 +9,7 @@ export type DocumentType = {
   content: string;
 };
 
-export type GetDocumentType = {
+export type GetAndDeleteDocumentType = {
   body: {
     documentId: string;
   };
