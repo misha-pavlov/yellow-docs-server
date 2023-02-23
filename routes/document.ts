@@ -9,9 +9,11 @@ import {
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
 const DocumentModel = require("../models/documentModel/documentModel");
+const UserModel = require("../models/userModel/userModel");
 const auth = require("../middleware/auth");
 const documentRouter = express.Router();
 
+// POST
 documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
   const userId = checkExistsUserId(req, res);
   const document = new DocumentModel({
@@ -31,6 +33,7 @@ documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
   }
 });
 
+// GET
 documentRouter.get(
   "/getOne",
   auth,
@@ -75,6 +78,32 @@ documentRouter.get(
   }
 );
 
+documentRouter.get(
+  "/getDocumentUsers",
+  auth,
+  async (req: GetAndDeleteDocumentType, res: Response) => {
+    const documentId = req.body.documentId;
+
+    if (!documentId) {
+      res.status(400).json({ message: "Document id not found!" });
+      return null;
+    }
+
+    const document = await DocumentModel.findOne({ _id: documentId });
+
+    if (!document) {
+      res.status(400).json({ message: "Document not found!" });
+      return null;
+    }
+
+    const userIds = document.visibleFor;
+    const users = await UserModel.find({ _id: { $in: userIds } });
+
+    res.status(200).json(users);
+  }
+);
+
+// PATCH
 documentRouter.patch(
   "/edit",
   auth,
@@ -100,6 +129,7 @@ documentRouter.patch(
   }
 );
 
+// DELETE
 documentRouter.delete(
   "/delete",
   auth,
