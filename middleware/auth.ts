@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { UserType } from "../types/userTypes";
+import { refreshJWT } from "../utils/refreshJwt";
 
 interface Config {
   TOKEN_KEY: string;
@@ -14,12 +15,16 @@ const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const token: string | undefined =
+  let token: string | undefined =
     req.body.token || req.query.token || req.headers["x-access-token"];
 
   if (!token) {
     return res.status(403).send("A token is required for authentication");
   }
+
+  // refresh jwt if need
+  token = refreshJWT(token);
+
   try {
     const decoded: JwtPayload = jwt.verify(
       token,
