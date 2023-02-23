@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { CATS_MEMES_IMAGE_URLS } from "../static/images";
 import { SignInReq, SignUpReq, UserType } from "../types/user.types";
 import { UserReq } from "../types/common.types";
+import { checkExistsUserId } from "../utils/checkExistsUserId";
 
 const UserModel = require("../models/userModel/userModel");
 const auth = require("../middleware/auth");
@@ -86,13 +87,7 @@ userRouter.get(
   "/currentUser",
   auth,
   async (req: UserReq, res: express.Response) => {
-    const userId = req.user && req.user.user_id;
-
-    if (!userId) {
-      res.status(400).json({ message: "User id not found!" });
-      return null;
-    }
-
+    const userId = checkExistsUserId(req, res);
     const currentUser = await UserModel.findOne({ _id: userId });
 
     if (!currentUser) {

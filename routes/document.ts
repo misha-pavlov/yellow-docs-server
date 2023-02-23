@@ -1,19 +1,14 @@
 import express, { Response } from "express";
 import { UserReq } from "../types/common.types";
-import { GetDocumentType } from "../types/document.types";
+import { GetDocumentType, DocumentType } from "../types/document.types";
+import { checkExistsUserId } from "../utils/checkExistsUserId";
 
 const DocumentModel = require("../models/documentModel/documentModel");
 const auth = require("../middleware/auth");
 const documentRouter = express.Router();
 
 documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
-  const userId = req.user && req.user.user_id;
-
-  if (!userId) {
-    res.status(400).json({ message: "User id not found!" });
-    return null;
-  }
-
+  const userId = checkExistsUserId(req, res);
   const document = new DocumentModel({
     owner: userId,
     changedBy: userId,
@@ -36,7 +31,6 @@ documentRouter.get(
   auth,
   async (req: GetDocumentType, res: Response) => {
     const documentId = req.body.documentId;
-    console.log("🚀 ~ file: document.ts:39 ~ documentId:", documentId);
 
     if (!documentId) {
       res.status(400).json({ message: "Document id not found!" });
@@ -51,6 +45,24 @@ documentRouter.get(
     }
 
     res.status(200).json(document);
+  }
+);
+
+documentRouter.get(
+  "/getRecentDocuments",
+  auth,
+  async (req: UserReq, res: Response) => {
+    const userId = checkExistsUserId(req, res);
+    const recentDocuments = await DocumentModel.find({
+      visibleFor: { $in: [userId] },
+    }).sort({ changedAt: -1 });
+
+    if (!recentDocuments) {
+      res.status(400).json({ message: "Recent documents not found!" });
+      return null;
+    }
+
+    res.status(200).json(recentDocuments);
   }
 );
 
