@@ -1,5 +1,5 @@
 import express from "express";
-import { CreateReq } from "../types/documentTypes";
+import { UserReq } from "../types/common.types";
 
 const DocumentModel = require("../models/documentModel/documentModel");
 const auth = require("../middleware/auth");
@@ -8,14 +8,19 @@ const documentRouter = express.Router();
 documentRouter.post(
   "/create",
   auth,
-  async (req: CreateReq, res: express.Response) => {
-    const owner = req.body.owner;
+  async (req: UserReq, res: express.Response) => {
+    const userId = req.user && req.user.user_id;
+
+    if (!userId) {
+      res.status(400).json({ message: "User id not found!" });
+      return null;
+    }
 
     const document = new DocumentModel({
-      owner,
-      changedBy: owner,
+      owner: userId,
+      changedBy: userId,
       changedAt: new Date(),
-      visibleFor: [owner],
+      visibleFor: [userId],
     });
 
     try {

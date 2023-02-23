@@ -2,12 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { CATS_MEMES_IMAGE_URLS } from "../static/images";
-import {
-  CurrentUserReq,
-  SignInReq,
-  SignUpReq,
-  UserType,
-} from "../types/userTypes";
+import { SignInReq, SignUpReq, UserType } from "../types/user.types";
+import { UserReq } from "../types/common.types";
 
 const UserModel = require("../models/userModel/userModel");
 const auth = require("../middleware/auth");
@@ -89,7 +85,7 @@ userRouter.post("/signin", async (req: SignInReq, res: express.Response) => {
 userRouter.get(
   "/currentUser",
   auth,
-  async (req: CurrentUserReq, res: express.Response) => {
+  async (req: UserReq, res: express.Response) => {
     const userId = req.user && req.user.user_id;
 
     if (!userId) {

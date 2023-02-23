@@ -1,5 +1,3 @@
-import { Request } from 'express';
-
 export type UserType = {
   _id: string;
   firstName: string;
@@ -25,9 +23,3 @@ export type SignInReq = {
     password: string;
   };
 };
-
-export interface CurrentUserReq extends Request {
-  user?: {
-    user_id: string;
-  };
-}

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { UserType } from "../types/userTypes";
+import { UserType } from "../types/user.types";
 import { refreshJWT } from "../utils/refreshJwt";
 
 interface Config {
