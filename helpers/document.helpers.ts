@@ -104,7 +104,7 @@ export const getAdditionalRDFields = (
   userId: string
 ) => {
   let additionalFields = {};
-  const owned = req.body.owned;
+  const owned = req.query.owned;
 
   if (owned === OwnedEnum.BY_ME) {
     additionalFields = { owner: userId };

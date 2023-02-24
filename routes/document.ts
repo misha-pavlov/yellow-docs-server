@@ -55,9 +55,9 @@ documentRouter.get(
   auth,
   async (req: UserReq & GetRecentDocumentsType, res: Response) => {
     const userId = checkExistsUserId(req, res) as string;
-    const searchTerm = req.body.searchTerm || "";
+    const searchTerm = req.query.searchTerm || "";
     const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
-    const sort = req.body.sort;
+    const sort = req.query.sort;
 
     const additionalFields = getAdditionalRDFields(req, userId);
 

@@ -30,7 +30,7 @@ export type GetAndDeleteDocumentType = {
 };
 
 export type GetRecentDocumentsType = {
-  body: {
+  query: {
     searchTerm?: string;
     owned: OwnedEnum;
     sort: SortEnum;
