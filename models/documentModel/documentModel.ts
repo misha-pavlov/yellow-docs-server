@@ -29,6 +29,10 @@ const dataSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  openHistory: {
+    type: [Object],
+    default: [],
+  },
 });
 
 module.exports = mongoose.model("Document", dataSchema);

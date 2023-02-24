@@ -8,13 +8,17 @@ import {
 
 const DocumentModel = require("../models/documentModel/documentModel");
 
-export const getFieldsToEdit = async (req: EditDocument & UserReq) => {
+export const getFieldsToEdit = async (
+  req: EditDocument & UserReq,
+  userId: string
+) => {
   let editFields = {};
   const documentId = req.body.documentId;
   const newTitle = req.body?.newTitle;
   const newVisibleForUserId = req.body?.newVisibleForUserId;
   const newFavouriteUserId = req.body?.newFavouriteUserId;
   const newContent = req.body?.newContent;
+  const updateOpenHistory = req.body?.updateOpenHistory;
 
   if (newTitle) {
     editFields = { title: newTitle };
@@ -54,6 +58,22 @@ export const getFieldsToEdit = async (req: EditDocument & UserReq) => {
 
   if (newContent) {
     editFields = { content: newContent };
+  }
+
+  if (updateOpenHistory) {
+    const document = await DocumentModel.findOne({ _id: documentId });
+    const newElement = { userId, date: new Date() };
+
+    if (document.openHistory.includes(userId)) {
+      const filteredArray = document.openHistory.filter(
+        (obj: { userId: string }) => obj.userId !== userId
+      );
+      editFields = { openHistory: [...filteredArray, newElement] };
+    } else {
+      editFields = {
+        openHistory: newElement,
+      };
+    }
   }
 
   return editFields;

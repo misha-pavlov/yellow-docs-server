@@ -9,6 +9,8 @@ import {
   GetAndDeleteDocumentType,
   GetRecentDocumentsType,
   EditDocument,
+  DocumentType,
+  SortEnum,
 } from "../types/document.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
@@ -55,6 +57,7 @@ documentRouter.get(
     const userId = checkExistsUserId(req, res) as string;
     const searchTerm = req.body.searchTerm || "";
     const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
+    const sort = req.body.sort;
 
     const additionalFields = getAdditionalRDFields(req, userId);
 
@@ -62,11 +65,59 @@ documentRouter.get(
       visibleFor: { $in: [userId] },
       title: { $regex: regex, $options: "i" },
       ...additionalFields,
-    }).sort({ changedAt: -1 });
+    }).sort(
+      (sort === SortEnum.LAST_MODIFIED && { changedAt: -1 }) ||
+        (sort === SortEnum.TITLE && { title: 1 }) ||
+        {}
+    );
 
     if (!recentDocuments) {
       res.status(400).json({ message: "Recent documents not found!" });
       return null;
+    }
+
+    // Sorts
+    if (sort === SortEnum.LAST_MODIFIED_BY_ME) {
+      recentDocuments.sort((a: DocumentType, b: DocumentType) => {
+        const userIdA = parseInt(a.changedBy.slice(4));
+        const userIdB = parseInt(b.changedBy.slice(4));
+        const certainUserId = parseInt(userId.slice(4));
+
+        // If both objects have the same user id, use the default comparison
+        if (userIdA === certainUserId && userIdB === certainUserId) {
+          return 0;
+        }
+
+        // If object a has the target user id, prioritize it
+        else if (userIdA === certainUserId) {
+          return -1;
+        }
+
+        // If object b has the target user id, prioritize it
+        else if (userIdB === certainUserId) {
+          return 1;
+        }
+
+        // If neither object has the target user id, compare the user ids numerically
+        else {
+          return userIdA - userIdB;
+        }
+      });
+    }
+
+    if (sort === SortEnum.LAST_OPENED_BY_ME) {
+      recentDocuments.sort((a: DocumentType, b: DocumentType) => {
+        const userOpenHistoryDateA = a.openHistory.find(
+          (obj: { userId: string; date: Date }) => obj.userId === userId
+        )?.date;
+        const userOpenHistoryDateB = b.openHistory.find(
+          (obj: { userId: string; date: Date }) =>
+            obj.userId === userId && obj.date
+        )?.date;
+
+        // @ts-ignore because this vars are date and ts thinks that we can not do "-" in dates
+        return userOpenHistoryDateB - userOpenHistoryDateA;
+      });
     }
 
     res.status(200).json(recentDocuments);
@@ -90,19 +141,23 @@ documentRouter.patch(
   "/edit",
   auth,
   async (req: EditDocument & UserReq, res: Response) => {
-    const userId = checkExistsUserId(req, res);
+    const userId = checkExistsUserId(req, res) as string;
     const documentId = req.body.documentId;
+    const updateOpenHistory = req.body?.updateOpenHistory;
 
     if (!documentId) {
       res.status(400).json({ message: "Document id not found!" });
       return null;
     }
 
-    const fieldsToEdit = await getFieldsToEdit(req);
+    const fieldsToEdit = await getFieldsToEdit(req, userId);
 
     await DocumentModel.findOneAndUpdate(
       { _id: documentId },
-      { ...fieldsToEdit, changedBy: userId, changedAt: new Date() }
+      {
+        ...fieldsToEdit,
+        ...(!updateOpenHistory && { changedBy: userId, changedAt: new Date() }),
+      }
     );
 
     const editedDocument = await DocumentModel.findOne({ _id: documentId });
