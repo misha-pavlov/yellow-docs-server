@@ -23,3 +23,9 @@ export type SignInReq = {
     password: string;
   };
 };
+
+export type UserByIdReq = {
+  query: {
+    userId: string;
+  };
+};
