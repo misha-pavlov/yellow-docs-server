@@ -182,8 +182,8 @@ documentRouter.delete(
       return null;
     }
 
-    await DocumentModel.deleteOne({ _id: documentId });
-    res.status(200).send("Deleted!");
+    const deletedDocument = await DocumentModel.findOneAndDelete({ _id: documentId });
+    res.status(200).send(deletedDocument);
   }
 );
 
