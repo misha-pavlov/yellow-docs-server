@@ -23,8 +23,14 @@ export enum SortEnum {
   TITLE = "TITLE",
 }
 
-export type GetAndDeleteDocumentType = {
+export type DeleteDocumentType = {
   body: {
+    documentId: string;
+  };
+};
+
+export type GetDocumentType = {
+  query: {
     documentId: string;
   };
 };

@@ -6,11 +6,12 @@ import {
 } from "../helpers/document.helpers";
 import { UserReq } from "../types/common.types";
 import {
-  GetAndDeleteDocumentType,
   GetRecentDocumentsType,
   EditDocument,
   DocumentType,
   SortEnum,
+  GetDocumentType,
+  DeleteDocumentType,
 } from "../types/document.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
@@ -43,8 +44,8 @@ documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
 documentRouter.get(
   "/getOne",
   auth,
-  async (req: GetAndDeleteDocumentType, res: Response) => {
-    const documentId = req.body.documentId;
+  async (req: GetDocumentType, res: Response) => {
+    const documentId = req.query.documentId;
     const document = await getDocument(documentId, res);
     res.status(200).json(document);
   }
@@ -127,8 +128,8 @@ documentRouter.get(
 documentRouter.get(
   "/getDocumentUsers",
   auth,
-  async (req: GetAndDeleteDocumentType, res: Response) => {
-    const documentId = req.body.documentId;
+  async (req: GetDocumentType, res: Response) => {
+    const documentId = req.query.documentId;
     const document = await getDocument(documentId, res);
     const userIds = document.visibleFor;
     const users = await UserModel.find({ _id: { $in: userIds } });
@@ -170,7 +171,7 @@ documentRouter.patch(
 documentRouter.delete(
   "/delete",
   auth,
-  async (req: GetAndDeleteDocumentType & UserReq, res: Response) => {
+  async (req: DeleteDocumentType & UserReq, res: Response) => {
     const userId = checkExistsUserId(req, res);
     const documentId = req.body.documentId;
     const document = await getDocument(documentId, res);
@@ -182,7 +183,9 @@ documentRouter.delete(
       return null;
     }
 
-    const deletedDocument = await DocumentModel.findOneAndDelete({ _id: documentId });
+    const deletedDocument = await DocumentModel.findOneAndDelete({
+      _id: documentId,
+    });
     res.status(200).send(deletedDocument);
   }
 );
