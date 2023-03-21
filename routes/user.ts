@@ -126,8 +126,10 @@ userRouter.get(
   auth,
   async (req: SearchByEmail, res: Response) => {
     const searchTerm = req.query.searchTerm;
-    const regex = new RegExp(searchTerm.trim().split(/\s+/).join('|'));
-    const users = UserModel.find({ 'tags.title': { $regex: regex, $options: 'i' } });
+    const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
+    const users = await UserModel.find({
+      email: { $regex: regex, $options: "i" },
+    });
     res.status(200).json(users);
   }
 );
