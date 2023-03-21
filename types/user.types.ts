@@ -29,3 +29,9 @@ export type UserByIdReq = {
     userId: string;
   };
 };
+
+export type SearchByEmail = {
+  query: {
+    searchTerm: string;
+  };
+};

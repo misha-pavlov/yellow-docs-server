@@ -1,8 +1,9 @@
-import express from "express";
+import express, { Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { CATS_MEMES_IMAGE_URLS } from "../static/images";
 import {
+  SearchByEmail,
   SignInReq,
   SignUpReq,
   UserByIdReq,
@@ -15,7 +16,8 @@ const UserModel = require("../models/userModel/userModel");
 const auth = require("../middleware/auth");
 const userRouter = express.Router();
 
-userRouter.post("/signup", async (req: SignUpReq, res: express.Response) => {
+// POST
+userRouter.post("/signup", async (req: SignUpReq, res: Response) => {
   const isExistingUser = await UserModel.findOne({ email: req.body.email });
 
   if (isExistingUser) {
@@ -58,7 +60,7 @@ userRouter.post("/signup", async (req: SignUpReq, res: express.Response) => {
   }
 });
 
-userRouter.post("/signin", async (req: SignInReq, res: express.Response) => {
+userRouter.post("/signin", async (req: SignInReq, res: Response) => {
   const userByMail = (await UserModel.findOne({
     email: req.body.email,
   })) as UserType;
@@ -88,41 +90,45 @@ userRouter.post("/signin", async (req: SignInReq, res: express.Response) => {
   res.json(userByMail);
 });
 
-userRouter.get(
-  "/currentUser",
-  auth,
-  async (req: UserReq, res: express.Response) => {
-    const userId = checkExistsUserId(req, res);
-    const currentUser = await UserModel.findOne({ _id: userId });
+// GET
+userRouter.get("/currentUser", auth, async (req: UserReq, res: Response) => {
+  const userId = checkExistsUserId(req, res);
+  const currentUser = await UserModel.findOne({ _id: userId });
 
-    if (!currentUser) {
-      res.status(400).json({ message: "User not found!" });
-      return null;
-    }
-
-    res.status(200).json(currentUser);
+  if (!currentUser) {
+    res.status(400).json({ message: "User not found!" });
+    return null;
   }
-);
+
+  res.status(200).json(currentUser);
+});
+
+userRouter.get("/userById", auth, async (req: UserByIdReq, res: Response) => {
+  const userId = req.query.userId;
+
+  if (!userId) {
+    res.status(400).json({ message: "User ID not found!" });
+    return null;
+  }
+
+  const user = await UserModel.findOne({ _id: userId });
+
+  if (!user) {
+    res.status(400).json({ message: "User not found!" });
+    return null;
+  }
+
+  res.status(200).json(user);
+});
 
 userRouter.get(
-  "/userById",
+  "/searchByEmail",
   auth,
-  async (req: UserByIdReq, res: express.Response) => {
-    const userId = req.query.userId;
-
-    if (!userId) {
-      res.status(400).json({ message: "User ID not found!" });
-      return null;
-    }
-
-    const user = await UserModel.findOne({ _id: userId });
-
-    if (!user) {
-      res.status(400).json({ message: "User not found!" });
-      return null;
-    }
-
-    res.status(200).json(user);
+  async (req: SearchByEmail, res: Response) => {
+    const searchTerm = req.query.searchTerm;
+    const regex = new RegExp(searchTerm.trim().split(/\s+/).join('|'));
+    const users = UserModel.find({ 'tags.title': { $regex: regex, $options: 'i' } });
+    res.status(200).json(users);
   }
 );
 
