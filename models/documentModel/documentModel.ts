@@ -21,6 +21,10 @@ const dataSchema = new mongoose.Schema({
     require: true,
     type: [String],
   },
+  readOnlyMembers: {
+    type: [String],
+    default: [],
+  },
   favouriteInUsers: {
     type: [String],
     default: [],

@@ -6,6 +6,7 @@ export type DocumentType = {
   owner: string;
   visibleFor: [string];
   favouriteInUsers: [string];
+  readOnlyMembers: [string];
   content: string;
   openHistory: Array<{ userId: string; date: Date }>;
 };
@@ -21,6 +22,11 @@ export enum SortEnum {
   LAST_MODIFIED_BY_ME = "LAST_MODIFIED_BY_ME",
   LAST_MODIFIED = "LAST_MODIFIED",
   TITLE = "TITLE",
+}
+
+export enum UserAccessEnum {
+  READ_ONLY = "READ_ONLY",
+  FULL = "FULL",
 }
 
 export type DeleteDocumentType = {
@@ -51,5 +57,13 @@ export type EditDocument = {
     newFavouriteUserId?: string;
     newContent?: string;
     updateOpenHistory?: boolean;
+  };
+};
+
+export type ConvertTo = {
+  body: {
+    userId: string;
+    documentId: string;
+    accessType: UserAccessEnum;
   };
 };

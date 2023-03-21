@@ -12,6 +12,8 @@ import {
   SortEnum,
   GetDocumentType,
   DeleteDocumentType,
+  ConvertTo,
+  UserAccessEnum,
 } from "../types/document.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
@@ -164,6 +166,49 @@ documentRouter.patch(
     const editedDocument = await DocumentModel.findOne({ _id: documentId });
 
     res.status(200).json(editedDocument);
+  }
+);
+
+documentRouter.patch(
+  "/convertTo",
+  auth,
+  async (req: ConvertTo, res: Response) => {
+    const newAccessType = req.body.accessType;
+    const documentId = req.body.documentId;
+    const userId = req.body.userId;
+
+    const document = await getDocument(documentId, res);
+
+    if (
+      newAccessType === UserAccessEnum.READ_ONLY &&
+      document.readOnlyMembers.includes(userId)
+    ) {
+      res.status(400).json({ message: "User already read only" });
+      return null;
+    }
+
+    if (
+      newAccessType === UserAccessEnum.FULL &&
+      !document.readOnlyMembers.includes(userId)
+    ) {
+      res.status(400).json({ message: "User already has full access" });
+      return null;
+    }
+
+    let newReadOnlyMembers;
+
+    if (newAccessType === UserAccessEnum.READ_ONLY) {
+      newReadOnlyMembers = [...document, userId];
+    } else {
+      newReadOnlyMembers = document.readOnlyMembers.filter(
+        (id: string) => id !== userId
+      );
+    }
+
+    await DocumentModel.findOneAndUpdate(
+      { _id: documentId },
+      { readOnlyMembers: newReadOnlyMembers }
+    );
   }
 );
 
