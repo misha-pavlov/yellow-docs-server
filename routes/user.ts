@@ -12,6 +12,7 @@ import {
 import { UserReq } from "../types/common.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
 
+const DocumentModel = require("../models/documentModel/documentModel");
 const UserModel = require("../models/userModel/userModel");
 const auth = require("../middleware/auth");
 const userRouter = express.Router();
@@ -125,9 +126,19 @@ userRouter.get(
   "/searchByEmail",
   auth,
   async (req: SearchByEmail, res: Response) => {
+    const documentId = req.query.documentId;
+    const document = await DocumentModel.findOne({ _id: documentId });
+
+    if (!document) {
+      res.status(400).json({ message: "Document not found!" });
+      return null;
+    }
+
     const searchTerm = req.query.searchTerm;
     const regex = new RegExp(searchTerm.trim().split(/\s+/).join("|"));
+
     const users = await UserModel.find({
+      _id: { $nin: document.visibleFor },
       email: { $regex: regex, $options: "i" },
     });
     res.status(200).json(users);

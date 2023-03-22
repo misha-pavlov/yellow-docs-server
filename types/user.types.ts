@@ -33,5 +33,6 @@ export type UserByIdReq = {
 export type SearchByEmail = {
   query: {
     searchTerm: string;
+    documentId: string;
   };
 };
