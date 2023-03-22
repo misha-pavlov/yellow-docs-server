@@ -198,7 +198,7 @@ documentRouter.patch(
     let newReadOnlyMembers;
 
     if (newAccessType === UserAccessEnum.READ_ONLY) {
-      newReadOnlyMembers = [...document, userId];
+      newReadOnlyMembers = [...document.readOnlyMembers, userId];
     } else {
       newReadOnlyMembers = document.readOnlyMembers.filter(
         (id: string) => id !== userId
