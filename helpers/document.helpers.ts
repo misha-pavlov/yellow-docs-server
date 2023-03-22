@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { UserReq } from "../types/common.types";
 import {
+  DocumentType,
   EditDocument,
   GetRecentDocumentsType,
   OwnedEnum,
@@ -19,14 +20,15 @@ export const getFieldsToEdit = async (
   const newFavouriteUserId = req.body?.newFavouriteUserId;
   const newContent = req.body?.newContent;
   const updateOpenHistory = req.body?.updateOpenHistory;
+  const newReadOnlyMemberId = req.body?.newReadOnlyMemberId;
+
+  const document = await DocumentModel.findOne({ _id: documentId });
 
   if (newTitle) {
     editFields = { title: newTitle };
   }
 
   if (newVisibleForUserId) {
-    const document = await DocumentModel.findOne({ _id: documentId });
-
     if (document.visibleFor.includes(newVisibleForUserId)) {
       editFields = {
         visibleFor: document.visibleFor.filter(
@@ -41,8 +43,6 @@ export const getFieldsToEdit = async (
   }
 
   if (newFavouriteUserId) {
-    const document = await DocumentModel.findOne({ _id: documentId });
-
     if (document.favouriteInUsers.includes(newFavouriteUserId)) {
       editFields = {
         favouriteInUsers: document.favouriteInUsers.filter(
@@ -56,12 +56,25 @@ export const getFieldsToEdit = async (
     }
   }
 
+  if (newReadOnlyMemberId) {
+    if (document.readOnlyMembers.includes(newReadOnlyMemberId)) {
+      editFields = {
+        readOnlyMembers: document.readOnlyMembers.filter(
+          (id: string) => id !== newReadOnlyMemberId
+        ),
+      };
+    } else {
+      editFields = {
+        readOnlyMembers: [...document.readOnlyMembers, newReadOnlyMemberId],
+      };
+    }
+  }
+
   if (newContent) {
     editFields = { content: newContent };
   }
 
   if (updateOpenHistory) {
-    const document = await DocumentModel.findOne({ _id: documentId });
     const newElement = { userId, date: new Date() };
 
     if (document.openHistory.includes(userId)) {

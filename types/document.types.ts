@@ -57,6 +57,7 @@ export type EditDocument = {
     newFavouriteUserId?: string;
     newContent?: string;
     updateOpenHistory?: boolean;
+    newReadOnlyMemberId?: boolean;
   };
 };
 
