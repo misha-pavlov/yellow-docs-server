@@ -1,3 +1,4 @@
+import { ApplyTemplateType } from "./../types/document.types";
 import express, { Response } from "express";
 import {
   getAdditionalRDFields,
@@ -7,12 +8,12 @@ import {
 import { UserReq } from "../types/common.types";
 import {
   GetRecentDocumentsType,
-  EditDocument,
+  EditDocumentType,
   DocumentType,
   SortEnum,
   GetDocumentType,
   DeleteDocumentType,
-  ConvertTo,
+  ConvertToType,
   UserAccessEnum,
 } from "../types/document.types";
 import { checkExistsUserId } from "../utils/checkExistsUserId";
@@ -41,6 +42,39 @@ documentRouter.post("/create", auth, async (req: UserReq, res: Response) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+documentRouter.post(
+  "/applyTemplate",
+  auth,
+  async (req: ApplyTemplateType, res: Response) => {
+    const title = req.body.title;
+    const owner = req.body.owner;
+    const content = req.body.content;
+
+    if (!title || !owner || !content) {
+      res.status(400).json({ message: "One of params is undefined!" });
+      return null;
+    }
+
+    const document = new DocumentModel({
+      owner,
+      title,
+      content,
+      changedBy: owner,
+      changedAt: new Date(),
+      visibleFor: [owner],
+    });
+
+    try {
+      const documentToSave = await document.save();
+      res.status(200).json(documentToSave);
+    } catch (error) {
+      // fix error types because unknown as default
+      const err = error as Error;
+      res.status(400).json({ message: err.message });
+    }
+  }
+);
 
 // GET
 documentRouter.get(
@@ -143,7 +177,7 @@ documentRouter.get(
 documentRouter.patch(
   "/edit",
   auth,
-  async (req: EditDocument & UserReq, res: Response) => {
+  async (req: EditDocumentType & UserReq, res: Response) => {
     const userId = checkExistsUserId(req, res) as string;
     const documentId = req.body.documentId;
     const updateOpenHistory = req.body?.updateOpenHistory;
@@ -172,7 +206,7 @@ documentRouter.patch(
 documentRouter.patch(
   "/convertTo",
   auth,
-  async (req: ConvertTo, res: Response) => {
+  async (req: ConvertToType, res: Response) => {
     const newAccessType = req.body.accessType;
     const documentId = req.body.documentId;
     const userId = req.body.userId;

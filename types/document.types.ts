@@ -49,7 +49,7 @@ export type GetRecentDocumentsType = {
   };
 };
 
-export type EditDocument = {
+export type EditDocumentType = {
   body: {
     documentId: string;
     newTitle?: string;
@@ -61,10 +61,18 @@ export type EditDocument = {
   };
 };
 
-export type ConvertTo = {
+export type ConvertToType = {
   body: {
     userId: string;
     documentId: string;
     accessType: UserAccessEnum;
+  };
+};
+
+export type ApplyTemplateType = {
+  body: {
+    title: string;
+    owner: string;
+    content: string;
   };
 };
