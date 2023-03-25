@@ -1,8 +1,7 @@
 import { Response } from "express";
 import { UserReq } from "../types/common.types";
 import {
-  DocumentType,
-  EditDocument,
+  EditDocumentType,
   GetRecentDocumentsType,
   OwnedEnum,
 } from "../types/document.types";
@@ -10,7 +9,7 @@ import {
 const DocumentModel = require("../models/documentModel/documentModel");
 
 export const getFieldsToEdit = async (
-  req: EditDocument & UserReq,
+  req: EditDocumentType & UserReq,
   userId: string
 ) => {
   let editFields = {};

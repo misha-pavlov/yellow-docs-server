@@ -47,15 +47,21 @@ templatesRouter.post(
 templatesRouter.get(
   "/getTemplatesForUser",
   auth,
-  async (req: UserReq, res: Response) => {
+  async (req: UserReq & { limit?: number }, res: Response) => {
     const userId = checkExistsUserId(req, res);
-    const templates = await TemplatesModel.find({ owner: userId });
+    const templates = await TemplatesModel.find({ owner: userId }).limit(
+      req.query.limit
+    );
 
     if (!templates) {
-      res.status(400).json({ message: "Current user does not have templates!" });
+      res
+        .status(400)
+        .json({ message: "Current user does not have templates!" });
       return null;
     }
 
     res.status(200).json(templates);
   }
 );
+
+module.exports = templatesRouter;

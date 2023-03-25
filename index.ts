@@ -20,13 +20,15 @@ const app = express();
 // routes
 const userRoutes = require("./routes/user");
 const documentRoutes = require("./routes/document");
-const userSettings = require("./routes/userSettings");
+const templatesRoutes = require("./routes/templates");
+const userSettingsRoutes = require("./routes/userSettings");
 
 app.use(cors());
 app.use(express.json());
 app.use("/user", userRoutes);
 app.use("/document", documentRoutes);
-app.use("/userSettings", userSettings);
+app.use("/templates", templatesRoutes);
+app.use("/userSettings", userSettingsRoutes);
 
 app.listen(3030, () => {
   console.log(`Server Started at ${3030}`);
